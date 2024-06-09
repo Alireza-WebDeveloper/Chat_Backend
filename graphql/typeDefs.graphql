@@ -1,0 +1,8 @@
+# Query , Mutation
+type Query {
+  getSource: Source
+}
+
+type Source {
+  url: String
+}
