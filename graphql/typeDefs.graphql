@@ -6,3 +6,32 @@ type Query {
 type Source {
   url: String
 }
+
+# Type State
+
+type Mutation {
+  addMessage(text: String!): Message
+  login(username: String, password: String): Login
+}
+
+type Message {
+  id: ID!
+  user: String!
+  text: String!
+}
+
+type Login {
+  message: String
+  status: Int
+  data: Data
+}
+
+type User {
+  username: String
+  password: String
+  _id: String
+}
+
+type Data {
+  user: User
+}
