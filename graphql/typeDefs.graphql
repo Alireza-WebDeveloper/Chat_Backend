@@ -1,6 +1,7 @@
 # Query , Mutation
 type Query {
   getSource: Source
+  getProfile: Login
 }
 
 type Source {

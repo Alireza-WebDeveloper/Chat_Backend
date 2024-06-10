@@ -53,6 +53,23 @@ const resolvers = {
     getSource: async () => {
       return { url: 'http://localhost:8000/graphql' };
     },
+    getProfile: async (_root, data, context) => {
+      const { user_id } = context;
+      if (!user_id) {
+        return ErrorMessage('');
+      }
+      const user = await UserModel.findOne({ _id: user_id });
+      if (user) {
+        return {
+          message: 'success',
+          status: 200,
+          data: {
+            user,
+          },
+        };
+      }
+      return ErrorMessage('');
+    },
   },
   Mutation: {
     login: async (_root, props, context) => {

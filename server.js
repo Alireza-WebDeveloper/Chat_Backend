@@ -27,11 +27,10 @@ app.use(
   '/graphql',
   apolloMiddleware(apolloServer, {
     context: ({ req, res }) => {
-      if (req.auth) {
-        // const user  = await ...
-        return { user };
+      if (req.headers.authorization) {
+        return { user_id: req.headers.authorization };
       }
-      return { user: false };
+      return { user_id: null };
     },
   })
 );
