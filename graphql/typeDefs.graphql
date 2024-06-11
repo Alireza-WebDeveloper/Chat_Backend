@@ -1,24 +1,26 @@
-# Query , Mutation
+# Query , Mutation , Subscription
 type Query {
   getSource: Source
   getProfile: Login
+  messages(user_send: ID!, user_recive: ID!): [Message]
 }
-
-type Source {
-  url: String
-}
-
-# Type State
 
 type Mutation {
-  addMessage(text: String!): Message
+  sendMessage(user_send: ID!, user_recive: ID!, content: String!): Message
   login(username: String, password: String): Login
 }
 
+type Subscription {
+  newMessage(user_recive: ID!): Message
+}
+# Type State
+
 type Message {
-  id: ID!
-  user: String!
-  text: String!
+  _id: ID!
+  user_send: ID!
+  user_recive: ID!
+  content: String!
+  timestamp: String
 }
 
 type Login {
@@ -35,4 +37,8 @@ type User {
 
 type Data {
   user: User
+}
+
+type Source {
+  url: String
 }

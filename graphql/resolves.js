@@ -46,13 +46,18 @@ const UserSchema = new Schema(
   }
 );
 
+const messageSchema = new Schema({
+  user_send: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  user_recive: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  content: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
+});
+
+const MessageModel = mongoose.model('Message', messageSchema);
 const UserModel = mongoose.model('User', UserSchema);
 // !! Resolvers
 const resolvers = {
   Query: {
-    getSource: async () => {
-      return { url: 'http://localhost:8000/graphql' };
-    },
     getProfile: async (_root, data, context) => {
       const { user_id } = context;
       if (!user_id) {
@@ -69,6 +74,12 @@ const resolvers = {
         };
       }
       return ErrorMessage('');
+    },
+    messages: async (parent, { user_send, user_recive }) => {
+      return await MessageModel.find({
+        user_send: ObjectId(user_send),
+        user_recive: ObjectId(user_recive),
+      }).toArray();
     },
   },
   Mutation: {
@@ -90,6 +101,22 @@ const resolvers = {
           user,
         },
       };
+    },
+    sendMessage: async (
+      _root,
+      { user_send, user_recive, content },
+      context
+    ) => {
+      // !! 1 )  Create Message
+      const newMessage = {
+        user_send: ObjectId(user_send),
+        user_recive: ObjectId(user_recive),
+        content,
+        timestamp: new Date().toISOString(),
+      };
+      // !! 2 )
+      await MessageModel.create(newMessage);
+      return null;
     },
   },
 };
