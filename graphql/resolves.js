@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
 import mongoose from 'mongoose';
+import { ObjectId } from 'mongodb';
 
 // !! Error Message Function
 function ErrorMessage(message = 'the error message') {
@@ -17,7 +17,7 @@ function ErrorMessage(message = 'the error message') {
   });
 }
 
-// Schema
+// !! Schema
 const { Schema } = mongoose;
 const UserSchema = new Schema(
   {
@@ -55,8 +55,14 @@ const messageSchema = new Schema({
 
 const MessageModel = mongoose.model('Message', messageSchema);
 const UserModel = mongoose.model('User', UserSchema);
+
+messageSchema.pre('find', function (next) {
+  next();
+});
+
 // !! Resolvers
 const resolvers = {
+  // Query
   Query: {
     getProfile: async (_root, data, context) => {
       const { user_id } = context;
@@ -75,13 +81,27 @@ const resolvers = {
       }
       return ErrorMessage('');
     },
-    messages: async (parent, { user_send, user_recive }) => {
-      return await MessageModel.find({
-        user_send: ObjectId(user_send),
-        user_recive: ObjectId(user_recive),
-      }).toArray();
+    getUsers: async (_root, data, context) => {
+      // 1 ) Find All Users
+      const user = await UserModel.find();
+      if (user) {
+        return user;
+      }
+      return ErrorMessage('');
+    },
+    getMessages: async (parent, { user_send, user_recive }) => {
+      // 1 ) Find Messages With References User_Recive , User_Send
+      const messages = await MessageModel.find({
+        user_recive,
+        user_send,
+      })
+        .populate('user_recive', '-password')
+        .populate('user_send', '-password');
+
+      return messages;
     },
   },
+  // Mutation
   Mutation: {
     login: async (_root, props, context) => {
       const { username, password } = props;

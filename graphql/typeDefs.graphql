@@ -2,7 +2,8 @@
 type Query {
   getSource: Source
   getProfile: Login
-  messages(user_send: ID!, user_recive: ID!): [Message]
+  getMessages(user_send: ID!, user_recive: ID!): [Message]
+  getUsers: [User]
 }
 
 type Mutation {
@@ -13,26 +14,26 @@ type Mutation {
 type Subscription {
   newMessage(user_recive: ID!): Message
 }
+
 # Type State
 
 type Message {
   _id: ID!
-  user_send: ID!
-  user_recive: ID!
+  user_send: User!
+  user_recive: User!
   content: String!
   timestamp: String
+}
+
+type User {
+  _id: ID!
+  username: String!
 }
 
 type Login {
   message: String
   status: Int
   data: Data
-}
-
-type User {
-  username: String
-  password: String
-  _id: String
 }
 
 type Data {
