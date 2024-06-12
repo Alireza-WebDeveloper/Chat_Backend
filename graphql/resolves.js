@@ -92,9 +92,12 @@ const resolvers = {
     getMessages: async (parent, { user_send, user_recive }) => {
       // 1 ) Find Messages With References User_Recive , User_Send
       const messages = await MessageModel.find({
-        user_recive,
-        user_send,
+        $or: [
+          { user_send, user_recive },
+          { user_send: user_recive, user_recive: user_send },
+        ],
       })
+        .sort({ timestamp: 1 }) // برای ترتیب صعودی. برای ترتیب نزولی از -1 استفاده کنید
         .populate('user_recive', '-password')
         .populate('user_send', '-password');
 
@@ -129,14 +132,15 @@ const resolvers = {
     ) => {
       // !! 1 )  Create Message
       const newMessage = {
-        user_send: ObjectId(user_send),
-        user_recive: ObjectId(user_recive),
+        user_send: user_send,
+        user_recive: user_recive,
         content,
-        timestamp: new Date().toISOString(),
       };
-      // !! 2 )
-      await MessageModel.create(newMessage);
-      return null;
+      const message = (await MessageModel.create(newMessage)).populate(
+        'user_send user_recive'
+      );
+
+      return message;
     },
   },
 };
