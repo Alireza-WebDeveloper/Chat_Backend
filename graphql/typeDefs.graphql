@@ -12,7 +12,7 @@ type Mutation {
 }
 
 type Subscription {
-  newMessage(user_recive: ID!): Message
+  messageAdded: Message
 }
 
 # Type State

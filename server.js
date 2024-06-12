@@ -2,9 +2,13 @@ import { ApolloServer } from '@apollo/server';
 import { expressMiddleware as apolloMiddleware } from '@apollo/server/express4';
 import { resolvers } from './graphql/resolves.js';
 import { readFile } from 'node:fs/promises';
+import { WebSocketServer } from 'ws';
+import { useServer as useWsServer } from 'graphql-ws/lib/use/ws';
+import { createServer as createHttpServer } from 'node:http';
 import mongoose from 'mongoose';
 const Port = process.env.PORT || 8000;
 import app from './app.js';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 
 // Connection MongoDb
 mongoose
@@ -21,7 +25,8 @@ process.on('uncaughtException', (err) => {
 
 // Connection Apollo Server
 const typeDefs = await readFile('./graphql/typeDefs.graphql', 'utf-8');
-const apolloServer = new ApolloServer({ typeDefs, resolvers });
+const schema = makeExecutableSchema({ typeDefs, resolvers });
+const apolloServer = new ApolloServer({ schema });
 await apolloServer.start();
 app.use(
   '/graphql',
@@ -35,7 +40,14 @@ app.use(
   })
 );
 
-app.listen('8000', () => {
+const httpServer = createHttpServer(app);
+const wsServer = new WebSocketServer({
+  server: httpServer,
+  path: '/graphql',
+});
+useWsServer({ schema }, wsServer);
+
+httpServer.listen('8000', () => {
   console.log(`server is running on port ${Port}`);
   console.log(`graphql endpoint http://localhost:8000/graphql`);
 });

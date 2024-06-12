@@ -1,6 +1,8 @@
+import { PubSub } from 'graphql-subscriptions';
 import mongoose from 'mongoose';
-import { ObjectId } from 'mongodb';
 
+// Subscription
+const pubSub = new PubSub();
 // !! Error Message Function
 function ErrorMessage(message = 'the error message') {
   return new GraphQLError(message, {
@@ -97,7 +99,7 @@ const resolvers = {
           { user_send: user_recive, user_recive: user_send },
         ],
       })
-        .sort({ timestamp: 1 }) // برای ترتیب صعودی. برای ترتیب نزولی از -1 استفاده کنید
+        .sort({ timestamp: 1 })
         .populate('user_recive', '-password')
         .populate('user_send', '-password');
 
@@ -139,8 +141,14 @@ const resolvers = {
       const message = (await MessageModel.create(newMessage)).populate(
         'user_send user_recive'
       );
-
+      pubSub.publish('MESSAGE_ADDED', { messageAdded: message });
       return message;
+    },
+  },
+  // Subscription
+  Subscription: {
+    messageAdded: {
+      subscribe: () => pubSub.asyncIterator('MESSAGE_ADDED'),
     },
   },
 };
