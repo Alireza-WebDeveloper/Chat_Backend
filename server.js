@@ -41,6 +41,7 @@ app.use(
 );
 
 const httpServer = createHttpServer(app);
+
 const wsServer = new WebSocketServer({
   server: httpServer,
   path: '/graphql',

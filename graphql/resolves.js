@@ -66,8 +66,7 @@ messageSchema.pre('find', function (next) {
 const resolvers = {
   // Query
   Query: {
-    getProfile: async (_root, data, context) => {
-      const { user_id } = context;
+    getProfile: async (_root, data, { user_id }) => {
       if (!user_id) {
         return ErrorMessage('');
       }
@@ -148,7 +147,10 @@ const resolvers = {
   // Subscription
   Subscription: {
     messageAdded: {
-      subscribe: () => pubSub.asyncIterator('MESSAGE_ADDED'),
+      subscribe: (_root, _args, context) => {
+        console.log(context);
+        return pubSub.asyncIterator('MESSAGE_ADDED');
+      },
     },
   },
 };
